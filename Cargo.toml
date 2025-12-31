@@ -7,3 +7,4 @@ edition = "2024"
 yaml-rust = "0.4"
 shellexpand = "3.1.1"
 clap = { version = "4.5.53", features = ["derive", "cargo"] }
+dirs = "6.0.0"

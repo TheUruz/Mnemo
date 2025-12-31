@@ -181,6 +181,7 @@ name = "mnemo"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "dirs",
  "shellexpand",
  "yaml-rust",
 ]

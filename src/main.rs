@@ -8,8 +8,8 @@ use clap::Parser;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let config = Config::load(&args.config_file).unwrap_or_else(|err| {
-        eprintln!("Error loading config file {}: {}", &args.config_file, err);
+    let config = Config::load(args.config_file).unwrap_or_else(|err| {
+        eprintln!("Error loading config file: {}", err);
         std::process::exit(1);
     });
 
@@ -21,6 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
+    println!("Done!");
     Ok(())
 }
 
@@ -30,7 +31,7 @@ fn print_summary(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
         let path = Path::new(&dir);
 
         if !path.is_dir() {
-            println!("{} Directory non trovata: {}\n", config.emojis.warning, dir);
+            println!("{} Directory not found: {}\n", config.emojis.warning, dir);
             continue;
         }
 
