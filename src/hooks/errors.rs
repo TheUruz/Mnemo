@@ -16,16 +16,18 @@ impl Display for ShellTypeError {
 }
 
 #[derive(Debug)]
-pub enum HookGenerationError {
+pub enum HookError {
     UnsupportedShell,
     GenerationFailed(String),
+    ApplicationFailed(String)
 }
-impl Error for HookGenerationError {}
-impl Display for HookGenerationError {
+impl Error for HookError {}
+impl Display for HookError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HookGenerationError::UnsupportedShell => write!(f, "Unsupported shell for hook generation"),
-            HookGenerationError::GenerationFailed(msg) => write!(f, "Hook generation failed: {}", msg),
+            HookError::UnsupportedShell => write!(f, "Unsupported shell for hook generation"),
+            HookError::GenerationFailed(msg) => write!(f, "Hook generation failed: {}", msg),
+            HookError::ApplicationFailed(msg) => write!(f, "Hook application failed: {}", msg),
         }
     }
 }

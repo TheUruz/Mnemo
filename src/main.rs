@@ -18,9 +18,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    if args.get_shell_hook {
-        Commands::get_shell_hook_script().unwrap_or_else(|err| {
-            eprintln!("Error generating shell hook: {}", err);
+    if args.set_shell_hook.is_some() {
+        Commands::set_shell_hook(args.set_shell_hook.as_deref()).unwrap_or_else(|err| {
+            eprintln!("Error setting shell hook: {}", err);
             std::process::exit(1);
         });
         return Ok(());

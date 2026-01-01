@@ -2,7 +2,7 @@ use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::process::Command;
-use crate::{Config, hooks::{errors::HookGenerationError, hook_generator}};
+use crate::{Config, hooks::{errors::HookError, errors::ShellTypeError, hook_handlers, shell}};
 
 
 pub struct Commands;
@@ -55,11 +55,25 @@ impl Commands {
         Ok(())
     }
 
-    pub fn get_shell_hook_script() -> Result<(), HookGenerationError> {
-        let hook_script = hook_generator::generate_hook()?;
-        println!("{}", hook_script);
+    pub fn set_shell_hook(shell_config_file: Option<&str>) -> Result<(), HookError> {
+        let hook_script = hook_handlers::get_hook()?;
+        let shell_config_path;
+        match shell_config_file {
+            Some(path) if !path.is_empty() => shell_config_path = shellexpand::tilde(path).to_string(),
+            _ => {
+                let shell = shell::get_shell().map_err(|e| match e {
+                    ShellTypeError::ShellNotFound => HookError::GenerationFailed("Shell not found, perhaps $SHELL is not set or is invalid".to_string()),
+                    ShellTypeError::UnsupportedShell(_) => HookError::UnsupportedShell,
+                })?;
+                shell_config_path = shellexpand::tilde(shell.get_default_config_path()).to_string();
+            }
+        }
+        hook_handlers::set_hook(&hook_script, &shell_config_path)?;
+        println!("Shell hook applied successfully to {}", shell_config_path);
         Ok(())
     }
 
-    pub fn hint_executable() { }
+    pub fn hint() {
+        todo!();
+    }
 }

@@ -19,8 +19,8 @@ pub struct Args {
     #[arg(short, long)]
     pub summary: bool,
 
-    /// Create a shell hook for the default shell.
-    /// The script is only created and returned as this call's result.
-    #[arg(long)]
-    pub get_shell_hook: bool
+    /// Set a shell hook for the default shell.
+    /// If a path to a shell config file is provided, that file will be used, otherwise it will be searched in userś home directory. (e.g. ~/.bashrc, ~/.zshrc)
+    #[arg(long, value_name = "SHELL_CONFIG_FILE", num_args = 0..=1, default_missing_value = Some(""), require_equals = true)]
+    pub set_shell_hook: Option<String>
 }

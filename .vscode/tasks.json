@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Copy assets",
+      "type": "shell",
+      "command": "mkdir -p target/debug/assets/hooks && cp -r src/hooks/assets/* target/debug/assets/hooks && cp ${workspaceFolder}/default_config.yaml target/debug",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "windows": {
+        "command": "xcopy src\\hooks\\assets target\\debug\\assets /E /I /Y"
+      }
+    }
+  ]
+}
