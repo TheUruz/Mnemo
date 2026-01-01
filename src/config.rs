@@ -1,8 +1,6 @@
 use yaml_rust::YamlLoader;
-use std::env;
-use std::{fs, io, error::Error, path::Path, path::PathBuf};
-use crate::emojis::EMOJIS;
-use crate::emojis;
+use std::{fs, io, env, error::Error, path::Path, path::PathBuf};
+use crate::emojis::{self, EMOJIS};
 
 #[derive(Debug)]
 pub struct Config {
