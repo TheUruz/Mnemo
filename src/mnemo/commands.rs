@@ -1,4 +1,4 @@
-use std::{fs, path::Path, process::Command, os::unix::fs::PermissionsExt};
+use std::{fs, path::Path, process::Command, os::unix::fs::PermissionsExt, error::Error};
 use crate::hooks::traits::Hookable;
 use crate::hooks::{errors::HookError, shell::Shell};
 use crate::config::settings::Settings;
@@ -7,7 +7,7 @@ use crate::config::settings::Settings;
 pub struct Commands;
 
 impl Commands {
-    pub fn print_summary(config: &Settings) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn print_summary(config: &Settings) -> Result<(), Box<dyn Error>> {
         for dir in config.dirs.iter() {
             let dir = shellexpand::tilde(dir).to_string();
             let path = Path::new(&dir);
@@ -61,7 +61,8 @@ impl Commands {
         Ok(())
     }
 
-    pub fn hint() {
-        todo!();
+    pub fn hint(_command: &String) -> Result<Option<&str>, Box<dyn Error>> {
+        println!("Received from hook: {_command}");
+        Ok(None)
     }
 }

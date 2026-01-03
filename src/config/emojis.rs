@@ -5,6 +5,7 @@ pub struct Emojis {
     pub info: &'static str,
     pub unknown: &'static str,
     pub executable: &'static str,
+    pub mnemo: &'static str
 }
 
 pub const EMOJIS: Emojis = Emojis {
@@ -12,5 +13,6 @@ pub const EMOJIS: Emojis = Emojis {
     warning: "⚠️",
     info: "ℹ️",
     unknown: "❔",
-    executable: "⚙️"
+    executable: "⚙️",
+    mnemo: "🤖"
 };

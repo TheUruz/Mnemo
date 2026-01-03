@@ -22,5 +22,10 @@ pub struct Args {
     /// Set a shell hook for the default shell.
     /// If a path to a shell config file is provided, that file will be used, otherwise it will be searched in userś home directory. (e.g. ~/.bashrc, ~/.zshrc)
     #[arg(long, value_name = "SHELL_CONFIG_FILE", num_args = 0..=1, default_missing_value = Some(""), require_equals = true)]
-    pub set_shell_hook: Option<String>
+    pub set_shell_hook: Option<String>,
+
+    /// Get a Mnemo hint based on a provided command.
+    /// Directories specified in the configuration file will be scanned for matches.
+    #[arg(short='H', long, value_name = "$COMMAND")]
+    pub hint: Option<String>
 }

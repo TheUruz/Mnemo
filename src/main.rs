@@ -1,7 +1,8 @@
-use mnemo::{config::settings::Settings, execution::{arg_parser::Args, commands::Commands}};
+use mnemo::{config::{settings::Settings, emojis::EMOJIS}, mnemo::{arg_parser::Args, commands::Commands}};
 use clap::{CommandFactory, Parser};
+use std::error::Error;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let config = Settings::load(args.config_file).unwrap_or_else(|err| {
         eprintln!("Error loading config file: {}", err);
@@ -22,6 +23,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(1);
         });
         return Ok(());
+    }
+
+    if args.hint.is_some() {
+        let hint_result = Commands::hint(args.hint.as_ref().expect("Command should be present"));
+        match hint_result {
+            Ok(r) => {
+                match r {
+                    Some(h) => println!("{} : Perhaps you were looking for this executable? '{}'", EMOJIS.mnemo, h),
+                    _ => (),
+                }
+                return Ok(())
+            },
+            Err(e) => {
+                eprintln!("Error fetching hints: {}", e);
+                return Err(e);
+            }
+        }
     }
 
     Args::command().print_help()?;
