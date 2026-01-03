@@ -1,11 +1,9 @@
-use mnemo::Config;
-use mnemo::commands::Commands;
-use mnemo::arg_parser::Args;
+use mnemo::{config::settings::Settings, execution::{arg_parser::Args, commands::Commands}};
 use clap::{CommandFactory, Parser};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let config = Config::load(args.config_file).unwrap_or_else(|err| {
+    let config = Settings::load(args.config_file).unwrap_or_else(|err| {
         eprintln!("Error loading config file: {}", err);
         std::process::exit(1);
     });

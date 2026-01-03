@@ -1,14 +1,13 @@
-use std::fs;
-use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
-use std::process::Command;
-use crate::{Config, hooks::{errors::HookError, errors::ShellTypeError, hook_handlers, shell}};
+use std::{fs, path::Path, process::Command, os::unix::fs::PermissionsExt};
+use crate::hooks::traits::Hookable;
+use crate::hooks::{errors::HookError, shell::Shell};
+use crate::config::settings::Settings;
 
 
 pub struct Commands;
 
 impl Commands {
-    pub fn print_summary(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn print_summary(config: &Settings) -> Result<(), Box<dyn std::error::Error>> {
         for dir in config.dirs.iter() {
             let dir = shellexpand::tilde(dir).to_string();
             let path = Path::new(&dir);
@@ -56,20 +55,9 @@ impl Commands {
     }
 
     pub fn set_shell_hook(shell_config_file: Option<&str>) -> Result<(), HookError> {
-        let hook_script = hook_handlers::get_hook()?;
-        let shell_config_path;
-        match shell_config_file {
-            Some(path) if !path.is_empty() => shell_config_path = shellexpand::tilde(path).to_string(),
-            _ => {
-                let shell = shell::get_shell().map_err(|e| match e {
-                    ShellTypeError::ShellNotFound => HookError::GenerationFailed("Shell not found, perhaps $SHELL is not set or is invalid".to_string()),
-                    ShellTypeError::UnsupportedShell(_) => HookError::UnsupportedShell,
-                })?;
-                shell_config_path = shellexpand::tilde(shell.get_default_config_path()).to_string();
-            }
-        }
-        hook_handlers::set_hook(&hook_script, &shell_config_path)?;
-        println!("Shell hook applied successfully to {}", shell_config_path);
+        let shell = Shell::get_shell()?;
+        let config_filename = shell.set_hook(shell_config_file)?;
+        println!("Shell hook applied successfully to {}. Please reopen the shell to automatically source the hook.", config_filename);
         Ok(())
     }
 
