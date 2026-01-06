@@ -1,0 +1,68 @@
+name: Mnemo Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build for Release
+        run: cargo build --release
+
+      - name: Prepare Distribution Folder
+        run: |
+          mkdir -p dist/assets/hooks
+
+          if [ -f target/release/mnemo ]; then
+            cp target/release/mnemo dist/
+            chmod +x dist/mnemo
+          else
+            echo "ERROR: binary 'mnemo' not found"
+            exit 1
+          fi
+
+          if [ -f default_config.yaml ]; then
+            cp default_config.yaml dist/
+          else
+            echo "ERROR: default_config.yaml not found"
+            exit 1
+          fi
+
+          if [ -d "src/hooks/assets" ] && [ "$(ls -A src/hooks/assets)" ]; then
+            cp -r src/hooks/assets/* dist/assets/hooks/
+          else
+            echo "ERROR: folder src/hooks/assets is empty or missing"
+            exit 1
+          fi
+
+          [ -f README.md ] && cp README.md dist/
+
+          if [ -f LICENSE ] || [ -f LICENSE.md ]; then
+            cp LICENSE* dist/
+          else
+            echo "ERROR: No LICENSE or LICENSE.md file found"
+            exit 1
+          fi
+
+          tar --zstd -cf mnemo-${{ github.ref_name }}.tar.zst -C dist .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mnemo-${{ github.ref_name }}.tar.zst
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false

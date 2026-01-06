@@ -1,4 +1,4 @@
-name: Verify and Artifact
+name: Generate Debug Artifact
 
 on:
   push:
@@ -12,27 +12,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Download source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configure Rust environment
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      # 3. Quality check
       - name: Cargo Check
         run: cargo check
 
-      # 4. Compile code for release
       - name: Build for Release
         run: cargo build --release
 
-      # 5. Prepare dist folder
       - name: Prepare Distribution Folder
         run: |
           mkdir -p dist/assets/hooks
-          cp target/release/mnemo dist/
+
+          if [ -f target/release/mnemo ]; then
+            cp target/release/mnemo dist/
+            chmod +x dist/mnemo
+          else
+            echo "ERROR: binary 'mnemo' not found"
+            exit 1
+          fi
 
           if [ -f default_config.yaml ]; then
             cp default_config.yaml dist/
@@ -57,10 +59,11 @@ jobs:
             exit 1
           fi
 
-      # 6. Artifact creation
+          tar --zstd -cf mnemo-debug.tar.zst -C dist .
+
       - name: Upload Artifact for Verification
         uses: actions/upload-artifact@v4
         with:
-          name: mnemo-verification-artifact
-          path: dist/
+          name: mnemo-debug-artifact
+          path: mnemo-debug.tar.zst
           retention-days: 7
