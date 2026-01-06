@@ -53,7 +53,7 @@ impl Commands {
         }
 
         let cmd_width = filtered_map.iter().map(|(k, _)| k.len()).max().unwrap_or(0);
-        println!("\n{} : Were you looking for one of these executables instead?", EMOJIS.mnemo);
+        println!("\n{} : Were you looking for one of these executable(s)?", EMOJIS.mnemo);
         for (cmd, values) in filtered_map {
             if let Some((first, rest)) = values.split_first() {
                 println!("{:>4}{:<width$} {:^8} {:<3} {}", "-", cmd, "->", EMOJIS.executable, first.unit_name, width = cmd_width);
