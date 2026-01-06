@@ -1,56 +1,30 @@
-use std::{fs, path::Path, process::Command, os::unix::fs::PermissionsExt, error::Error};
-use crate::hooks::traits::Hookable;
-use crate::hooks::{errors::HookError, shell::Shell};
-use crate::config::settings::Settings;
-
+use std::error::Error;
+use crate::config::{emojis::EMOJIS, settings::Settings};
+use crate::hooks::{traits::Hookable, errors::HookError, shell::Shell};
+use crate::mnemo::brain::{knowledge, knowledge_unit::KnowledgeUnit};
 
 pub struct Commands;
 
 impl Commands {
     pub fn print_summary(config: &Settings) -> Result<(), Box<dyn Error>> {
-        for dir in config.dirs.iter() {
-            let dir = shellexpand::tilde(dir).to_string();
-            let path = Path::new(&dir);
-    
-            if !path.is_dir() {
-                println!("{} Directory not found: {}\n", config.emojis.warning, dir);
+        let knowledge = knowledge::get_knowledge(Some(config))?;
+
+        for (dir, units) in knowledge {
+            if units.is_empty() {
+                println!("{} Directory was empty", EMOJIS.folder);
                 continue;
             }
-    
-            println!("{} {}", config.emojis.folder, dir);
-            let mut found = false;
-    
-            if let Ok(entries) = fs::read_dir(path) {
-                let mut entries: Vec<_> = entries.flatten().collect();
-                entries.sort_by_key(|e| e.file_name().to_string_lossy().to_lowercase());
-                for entry in entries {
-                    let file_path = entry.path();
-                    if file_path.is_file() {
-                        let metadata = fs::metadata(&file_path)?;
-                        if metadata.permissions().mode() & 0o111 != 0 {
-                            let name = file_path.file_name().unwrap().to_string_lossy();
-                            let output = Command::new("whatis").arg(&name.to_string()).output()?;
-                            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                            match stdout.is_empty() {
-                                true => {
-                                    println!("{: >4}  {: <19} - man description not found", config.emojis.unknown, name);
-                                }
-                                false => {
-                                    println!("{: >5}  {}", config.emojis.executable, stdout);
-                                }
-                            }
-                            found = true;
-                        }
-                    }
+            println!("{} {}", EMOJIS.folder, dir);
+
+            for u in units {
+                if u.unit_name == "N/A" || u.unit_description == "N/A" {
+                    println!("{: >4}  {: <19} - {}", config.emojis.unknown, u.unit_name, u.unit_description);
+                    continue;
                 }
+                println!("{: >5}  {} - {}", config.emojis.executable, u.unit_name, u.unit_description);
             }
-    
-            if !found {
-                println!("{} No executable file found in {}\n", config.emojis.info, dir);
-            }
-    
-            println!();
         }
+        println!();
         Ok(())
     }
 
@@ -61,8 +35,34 @@ impl Commands {
         Ok(())
     }
 
-    pub fn hint(_command: &String) -> Result<Option<&str>, Box<dyn Error>> {
-        println!("Received from hook: {_command}");
-        Ok(None)
+    pub fn hint(command: &String) -> Result<(), Box<dyn Error>> {
+        let confidence_map = knowledge::get_confidence_map(command)?;
+        let filtered_map: Vec<(String, Vec<&KnowledgeUnit>)> = confidence_map.map
+            .iter()
+            .map(|(cmd, values)| {
+                let filtered: Vec<&KnowledgeUnit> = values.iter()
+                    .filter(|k| !cmd.trim().starts_with(&k.unit_name))
+                    .collect();
+                (cmd.clone(), filtered)
+            })
+            .filter(|(_, filtered_values)| !filtered_values.is_empty())
+            .collect();
+
+        if filtered_map.is_empty() {
+            return Ok(());
+        }
+
+        let cmd_width = filtered_map.iter().map(|(k, _)| k.len()).max().unwrap_or(0);
+        println!("\n{} : Were you looking for one of these executables instead?", EMOJIS.mnemo);
+        for (cmd, values) in filtered_map {
+            if let Some((first, rest)) = values.split_first() {
+                println!("{:>4}{:<width$} {:^8} {:<3} {}", "-", cmd, "->", EMOJIS.executable, first.unit_name, width = cmd_width);
+                for v in rest {
+                    println!("{:>4}{:<width$} {:^8} {:<3} {}", "", "", "->", EMOJIS.executable, v.unit_name, width = cmd_width);
+                }
+            }
+        }
+        println!();
+        Ok(())
     }
 }

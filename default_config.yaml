@@ -1,2 +1,9 @@
+knowledge_type: filesystem
+
+confidence:
+  confidence_threshold: 25.0
+  main_match: 25.0
+  secondary_match: 10.0
+
 dirs:
   - /usr/local/bin

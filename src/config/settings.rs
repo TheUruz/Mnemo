@@ -1,10 +1,14 @@
 use yaml_rust::YamlLoader;
-use std::{fs, io, env, error::Error, path::Path, path::PathBuf};
+use std::{collections::HashMap, env, error::Error, fs, io, path::{Path, PathBuf}, str::FromStr};
+
+use crate::mnemo::brain::knowledge_type::KnowledgeType;
 use super::emojis::{self, EMOJIS};
 
 #[derive(Debug)]
 pub struct Settings {
     pub dirs: Vec<String>,
+    pub knowledge_type: KnowledgeType,
+    pub confidence: HashMap<String, f32>,
     pub emojis: &'static emojis::Emojis,
 }
 
@@ -24,8 +28,23 @@ impl Settings {
             .iter()
             .filter_map(|v| v.as_str().map(|s| s.to_string()))
             .collect();
+        let knowledge_type = KnowledgeType::from_str(doc["knowledge_type"]
+            .as_str()
+            .ok_or("'knowledge_type' invalid or missing in config file")?)?;    
+        let confidence_values = doc["confidence"]
+            .as_hash()
+            .ok_or("'confidence' invalid or not a valid mapping")?
+            .iter()
+            .filter_map(|(k,v)| {
+                Some((
+                    k.as_str()?.to_string(),
+                    v.as_f64().map(|f| f as f32)?
+                ))
+            })
+            .collect::<HashMap<String, f32>>();
 
-        Ok(Settings { dirs, emojis: &EMOJIS })
+
+        Ok(Settings { dirs, emojis: &EMOJIS, knowledge_type: knowledge_type, confidence: confidence_values })
     }
 
     pub fn get_default_config_path() -> Result<PathBuf, io::Error> {

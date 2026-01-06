@@ -8,7 +8,7 @@
       "cargo": {
         "args": ["run", "--bin=mnemo"]
       },
-      "args": ["--set-shell-hook"],
+      "args": [],
       "preLaunchTask": "Copy assets"
     }
   ]

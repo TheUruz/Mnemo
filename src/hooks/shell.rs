@@ -1,6 +1,5 @@
 use std::{fs::OpenOptions, str::FromStr, io::Write};
-use crate::hooks::errors::HookError;
-use super::{errors::ShellTypeError, traits::Hookable, hook_handlers};
+use super::{errors::{ShellTypeError, HookError}, traits::Hookable, hook_handlers};
 
 pub enum Shell {
     Bash,
