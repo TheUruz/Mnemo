@@ -1,7 +1,7 @@
 use yaml_rust::YamlLoader;
-use std::{collections::HashMap, env, error::Error, fs, io, path::{Path, PathBuf}, str::FromStr};
+use std::{collections::HashMap, env, error::Error, fs, io, path::PathBuf, str::FromStr};
 
-use crate::mnemo::brain::knowledge_type::KnowledgeType;
+use crate::{mnemo::brain::knowledge_type::KnowledgeType};
 use super::emojis::{self, EMOJIS};
 
 #[derive(Debug)]
@@ -14,11 +14,10 @@ pub struct Settings {
 
 impl Settings {
     pub fn load(path: Option<String>) -> Result<Self, Box<dyn Error>> {
-        let content;
-        match path {
-            Some(p) => content = fs::read_to_string(p)?,
-            None => content = Settings::get_default_config()?
-        }
+        let content = match path {
+            Some(p) => fs::read_to_string(p)?,
+            None => Settings::get_default_config()?
+        };
         Settings::try_ensure_hooks()?;
         let docs = YamlLoader::load_from_str(&content)?;
         let doc = &docs[0];
@@ -74,10 +73,13 @@ impl Settings {
         const DEFAULT_CONFIG_FILENAME: &str = "default_config.yaml";
         let file_name = DEFAULT_CONFIG_FILENAME.strip_prefix("default_").unwrap_or(DEFAULT_CONFIG_FILENAME);
         let file_path = path.join(file_name);
-        if !Path::new(&file_path).exists() {
-            let file_content = fs::read_to_string(DEFAULT_CONFIG_FILENAME)?;
+        if !file_path.exists() {
+            let exe_dir = env::current_exe()?;
+            let config_dir = exe_dir.parent().expect("Can'read executable directory").join(DEFAULT_CONFIG_FILENAME);
+            let file_content = fs::read_to_string(config_dir)?;
             fs::write(&file_path, file_content)?;
         }
+
         Ok(file_path)
     }
 
@@ -87,8 +89,9 @@ impl Settings {
         if dst_dir.exists() {
             return Ok(());
         }
+
         fs::create_dir_all(&dst_dir)?;
-        let hooks_dir = env::current_exe()?.parent().expect("Can't read parent exe parent directory").join(HOOK_DIRECTORY);
+        let hooks_dir = env::current_exe()?.parent().expect("Can't read current exe parent directory").join(HOOK_DIRECTORY);
         for entry in fs::read_dir(&hooks_dir)? {
             let entry = entry?.path();
             let file_name = entry.file_name().expect("File should have a name").to_string_lossy();

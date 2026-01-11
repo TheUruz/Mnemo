@@ -72,7 +72,7 @@ Mnemo supports two main modes of operation: as a standalone executable and as a 
 
 🔧 Configuration
 ----------------
-Upon `mnemo`'s first manual run (launching `mnemo --help` is enough) it will create its own folder under `~/.config` and will place its config files grabbed from repository's folders there. these files are the following:
+Upon `mnemo`'s first manual run (launching `mnemo --summary` is enough) it will create its own folder under `~/.config` and will place its config files grabbed from repository's folders there. these files are the following:
 - **A Default configuration**: the file `default_config.yaml` in the repository root will be copied over and renamed `config.yaml`. Any edit to the configuration should be done on `~/.config/mnemo/config.yaml`.
 - **Default Shell hooks**: `~/.config/mnemo/assets/hooks` will be created and files from `src/hooks/assets` will be copied over here trimming the "default_" prefix. Again if you want to customize how the hooks work you can do it but please make sure to alter files in the destination directory.
 
