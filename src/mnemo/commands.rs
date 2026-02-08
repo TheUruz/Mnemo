@@ -10,11 +10,12 @@ impl Commands {
         let knowledge = knowledge::get_knowledge(Some(config))?;
 
         for (dir, units) in knowledge {
+            println!("{} {}", EMOJIS.folder, dir);
+
             if units.is_empty() {
-                println!("{} Directory was empty", EMOJIS.folder);
+                println!("{: >6} {}", "", "Directory was empty");
                 continue;
             }
-            println!("{} {}", EMOJIS.folder, dir);
 
             for u in units {
                 if u.unit_name == "N/A" || u.unit_description == "N/A" {

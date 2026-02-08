@@ -33,9 +33,10 @@ $ mnemo --hint "ls | grep witr"
 **Pre-built binaries (Recommended):**
 
 1. Go to the project's Releases and grab the latest precompiled release
-2. Move the `mnemo` binary into a directory on your `$PATH`
+2. Create a symlink to the `mnemo` binary and move it into a directory on your `$PATH`
 
-This is the suggested method because releases are built and packaged automatically by CI.
+The symlink is needed because `mnemo` needs to run from a directory from which it can retrieve its default configuration files via relative path.
+After the default configuration has been pulled from there you can move mnemo binary file wherever you want on your `$PATH` and it will still work though this is not recommended.
 
 **Self-compile:**
 
